@@ -1,0 +1,9 @@
+Please install 'shogun-jvm' with the related binaries in your system.
+
+We recommend that you use Anaconda.
+
+You can install shogun type typing:
+
+	conda install  shogun
+	
+

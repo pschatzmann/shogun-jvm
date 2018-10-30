@@ -1,0 +1,477 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Data Setup #\n",
+    "\n",
+    "Shogun is and open-source machine learning library that offers a wide range of efficient and unified machine learning methods.\n",
+    "\n",
+    "It is implemented in C++ and provides the necessary java integration so that it can be used in any language which is based on the JVM:\n",
+    "- Java\n",
+    "- Scala\n",
+    "- Groovy\n",
+    "- Kotlin\n",
+    "- etc\n",
+    "\n",
+    "In this document we show how to pre-process the data before it can be used in Shogun. We use Jupyter with the BeakerX (http://beakerx.com) kernel.\n",
+    "\n",
+    "## Installation ##\n",
+    "Before you can start you need to install the Shogun binaries with 'conda install -c pschatzmann shogun-jvm'.\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Unfortunalty Shogun was not available via Maven. In order to simplify the usage of Shogun in any JVM environment, we crafted the  Shogun-JVM project which provides the binaries in conda and the jars via Maven. You can use these java libraries starting from JDK 1.8. \n",
+    "\n",
+    "We also add DL4J to simplify the pre-processing of the data."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "method": "display_data"
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "%classpath config resolver maven-public http://192.168.1.10:8081/repository/maven-public/\n",
+    "%%classpath add mvn \n",
+    "log4j:log4j:1.2.17\n",
+    "org.nd4j:nd4j-native-platform:1.0.0-beta2\n",
+    "org.deeplearning4j:deeplearning4j-core:1.0.0-beta2\n",
+    "org.shogun:shogun-jvm:0.0.1-SNAPSHOT"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We add the import for Shogun so that we can use the classes without package prefixes:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "import org.jblas._\n",
+       "import org.shogun._\n"
+      ]
+     },
+     "execution_count": 16,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "// shogun\n",
+    "import org.jblas._\n",
+    "import org.shogun._\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Setup Shogun Binaries ##\n",
+    "\n",
+    "Here we use shogun-jvm to load the /usr/local/lib/libshogun.so\n",
+    "Alternativly could try to set the LD_LIBRARY_PATH, DYLD_LIBRARY_PATH, java.library.path before the JVM is started."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ShogunNative.load()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Data Preparation ##\n",
+    "\n",
+    "We use the ND4J library to pre-process our data: We load the csv data from the Internet and convert all values to doubles (including the variety test field)\n",
+    "Finally we shuffle the data so that we can split the training and test data w/o any bias:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[[5.5, 2.5, 4.0, 1.3, 1.0], [6.7, 3.1, 5.6, 2.4, 2.0], [5.8, 2.7, 5.1, 1.9, 2.0], [6.9, 3.2, 5.7, 2.3, 2.0], [5.7, 2.5, 5.0, 2.0, 2.0], [5.0, 3.0, 1.6, 0.2, 0.0], [5.0, 3.4, 1.5, 0.2, 0.0], [5.7, 2.8, 4.1, 1.3, 1.0], [5.0, 2.3, 3.3, 1.0, 1.0], [5.3, 3.7, 1.5, 0.2, 0.0], [6.4, 2.8, 5.6, 2.1, 2.0], [6.3, 2.5, 5.0, 1.9, 2.0], [4.8, 3.1, 1.6, 0.2, 0.0], [5.7, 2.6, 3.5, 1.0, 1.0], [6.2, 2.2, 4.5, 1.5, 1.0], [5.5, 4.2, 1.4, 0.2, 0.0], [4.9, 3.6, 1.4, 0.1, 0.0], [6.9, 3.1, 5.4, 2.1, 2.0], [4.8, 3.0, 1.4, 0.3, 0.0], [5.1, 2.5, 3.0, 1.1, 1.0], [5.0, 3.4, 1.6, 0.4, 0.0], [5.8, 4.0, 1.2, 0.2, 0.0], [6.7, 2.5, 5.8, 1.8, 2.0], [6.3, 2.8, 5.1, 1.5, 2.0], [6.0, 2.2, 4.0, 1.0, 1.0], [6.0, 2.9, 4.5, 1.5, 1.0], [5.7, 3.8, 1.7, 0.3, 0.0], [5.5, 2.3, 4.0, 1.3, 1.0], [5.7, 4.4, 1.5, 0.4, 0.0], [4.4, 3.2, 1.3, 0.2, 0.0], [5.8, 2.7, 4.1, 1.0, 1.0], [5.4, 3.4, 1.7, 0.2, 0.0], [6.7, 3.3, 5.7, 2.1, 2.0], [5.4, 3.7, 1.5, 0.2, 0.0], [5.2, 4.1, 1.5, 0.1, 0.0], [5.5, 2.4, 3.7, 1.0, 1.0], [5.9, 3.0, 5.1, 1.8, 2.0], [4.8, 3.4, 1.6, 0.2, 0.0], [6.1, 2.9, 4.7, 1.4, 1.0], [6.4, 2.8, 5.6, 2.2, 2.0], [5.0, 3.5, 1.3, 0.3, 0.0], [7.9, 3.8, 6.4, 2.0, 2.0], [6.3, 2.5, 4.9, 1.5, 1.0], [5.1, 3.3, 1.7, 0.5, 0.0], [5.4, 3.9, 1.7, 0.4, 0.0], [5.2, 2.7, 3.9, 1.4, 1.0], [4.3, 3.0, 1.1, 0.1, 0.0], [6.9, 3.1, 5.1, 2.3, 2.0], [6.1, 2.8, 4.0, 1.3, 1.0], [4.4, 2.9, 1.4, 0.2, 0.0], [6.7, 3.1, 4.4, 1.4, 1.0], [6.0, 2.2, 5.0, 1.5, 2.0], [6.2, 2.9, 4.3, 1.3, 1.0], [5.7, 2.9, 4.2, 1.3, 1.0], [6.2, 3.4, 5.4, 2.3, 2.0], [5.2, 3.5, 1.5, 0.2, 0.0], [6.5, 3.0, 5.2, 2.0, 2.0], [5.7, 2.8, 4.5, 1.3, 1.0], [5.5, 2.6, 4.4, 1.2, 1.0], [5.6, 3.0, 4.1, 1.3, 1.0], [5.5, 2.4, 3.8, 1.1, 1.0], [5.5, 3.5, 1.3, 0.2, 0.0], [5.1, 3.7, 1.5, 0.4, 0.0], [5.8, 2.7, 5.1, 1.9, 2.0], [6.7, 3.1, 4.7, 1.5, 1.0], [5.1, 3.4, 1.5, 0.2, 0.0], [5.6, 2.8, 4.9, 2.0, 2.0], [5.0, 3.2, 1.2, 0.2, 0.0], [6.3, 2.9, 5.6, 1.8, 2.0], [6.0, 3.4, 4.5, 1.6, 1.0], [5.1, 3.5, 1.4, 0.3, 0.0], [4.5, 2.3, 1.3, 0.3, 0.0], [6.5, 2.8, 4.6, 1.5, 1.0], [4.4, 3.0, 1.3, 0.2, 0.0], [5.6, 3.0, 4.5, 1.5, 1.0], [6.4, 3.2, 5.3, 2.3, 2.0], [7.7, 2.8, 6.7, 2.0, 2.0], [5.2, 3.4, 1.4, 0.2, 0.0], [4.9, 3.1, 1.5, 0.2, 0.0], [4.9, 2.4, 3.3, 1.0, 1.0], [7.0, 3.2, 4.7, 1.4, 1.0], [6.1, 3.0, 4.9, 1.8, 2.0], [6.4, 3.1, 5.5, 1.8, 2.0], [5.7, 3.0, 4.2, 1.2, 1.0], [5.9, 3.0, 4.2, 1.5, 1.0], [6.4, 3.2, 4.5, 1.5, 1.0], [5.1, 3.8, 1.6, 0.2, 0.0], [6.8, 2.8, 4.8, 1.4, 1.0], [4.8, 3.0, 1.4, 0.1, 0.0], [7.3, 2.9, 6.3, 1.8, 2.0], [5.1, 3.8, 1.5, 0.3, 0.0], [5.0, 3.5, 1.6, 0.6, 0.0], [7.7, 3.8, 6.7, 2.2, 2.0], [5.8, 2.6, 4.0, 1.2, 1.0], [5.6, 2.9, 3.6, 1.3, 1.0], [6.1, 2.6, 5.6, 1.4, 2.0], [5.1, 3.8, 1.9, 0.4, 0.0], [4.7, 3.2, 1.3, 0.2, 0.0], [6.4, 2.7, 5.3, 1.9, 2.0], [4.9, 2.5, 4.5, 1.7, 2.0], [6.3, 2.3, 4.4, 1.3, 1.0], [5.6, 2.7, 4.2, 1.3, 1.0], [6.2, 2.8, 4.8, 1.8, 2.0], [5.0, 2.0, 3.5, 1.0, 1.0], [6.5, 3.2, 5.1, 2.0, 2.0], [4.6, 3.6, 1.0, 0.2, 0.0], [6.3, 3.4, 5.6, 2.4, 2.0], [4.7, 3.2, 1.6, 0.2, 0.0], [4.6, 3.4, 1.4, 0.3, 0.0], [5.6, 2.5, 3.9, 1.1, 1.0], [6.5, 3.0, 5.5, 1.8, 2.0], [7.4, 2.8, 6.1, 1.9, 2.0], [6.7, 3.0, 5.2, 2.3, 2.0], [7.6, 3.0, 6.6, 2.1, 2.0], [6.0, 2.7, 5.1, 1.6, 1.0], [6.1, 2.8, 4.7, 1.2, 1.0], [5.4, 3.0, 4.5, 1.5, 1.0], [7.2, 3.2, 6.0, 1.8, 2.0], [5.8, 2.7, 3.9, 1.2, 1.0], [7.7, 3.0, 6.1, 2.3, 2.0], [4.9, 3.1, 1.5, 0.1, 0.0], [6.8, 3.2, 5.9, 2.3, 2.0], [7.2, 3.0, 5.8, 1.6, 2.0], [5.4, 3.4, 1.5, 0.4, 0.0], [6.3, 3.3, 6.0, 2.5, 2.0], [6.7, 3.0, 5.0, 1.7, 1.0], [4.8, 3.4, 1.9, 0.2, 0.0], [6.6, 2.9, 4.6, 1.3, 1.0], [6.9, 3.1, 4.9, 1.5, 1.0], [4.6, 3.1, 1.5, 0.2, 0.0], [5.0, 3.3, 1.4, 0.2, 0.0], [4.9, 3.0, 1.4, 0.2, 0.0], [7.2, 3.6, 6.1, 2.5, 2.0], [7.7, 2.6, 6.9, 2.3, 2.0], [5.1, 3.5, 1.4, 0.2, 0.0], [6.1, 3.0, 4.6, 1.4, 1.0], [5.9, 3.2, 4.8, 1.8, 1.0], [7.1, 3.0, 5.9, 2.1, 2.0], [6.6, 3.0, 4.4, 1.4, 1.0], [4.6, 3.2, 1.4, 0.2, 0.0], [6.3, 2.7, 4.9, 1.8, 2.0], [6.8, 3.0, 5.5, 2.1, 2.0], [6.3, 3.3, 4.7, 1.6, 1.0], [6.7, 3.3, 5.7, 2.5, 2.0], [6.4, 2.9, 4.3, 1.3, 1.0], [6.5, 3.0, 5.8, 2.2, 2.0], [5.4, 3.9, 1.3, 0.4, 0.0], [5.0, 3.6, 1.4, 0.2, 0.0], [5.8, 2.8, 5.1, 2.4, 2.0], [6.0, 3.0, 4.8, 1.8, 2.0]]"
+      ]
+     },
+     "execution_count": 18,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "import org.datavec.api.records.reader.impl.csv.CSVRecordReader\n",
+    "import org.datavec.api.transform.schema.Schema\n",
+    "import org.datavec.api.transform.TransformProcess\n",
+    "import org.datavec.api.records.reader.impl.transform.TransformProcessRecordReader\n",
+    "import org.datavec.api.transform.transform.categorical._\n",
+    "import org.datavec.api.transform.transform.doubletransform._\n",
+    "import org.datavec.api.split.InputStreamInputSplit\n",
+    "import java.util._\n",
+    "\n",
+    "var schema = new Schema.Builder()\n",
+    "    .addColumnDouble(\"sepal.length\")\n",
+    "    .addColumnDouble(\"sepal.width\")\n",
+    "    .addColumnDouble(\"petal.length\")\n",
+    "    .addColumnDouble(\"petal.width\")\n",
+    "    .addColumnCategorical(\"variety\", Arrays.asList(\"Setosa\",\"Versicolor\",\"Virginica\"))\n",
+    "    .build();\n",
+    "\n",
+    "var tp = new TransformProcess.Builder(schema)\n",
+    "    .transform(new CategoricalToIntegerTransform(\"variety\"))\n",
+    "    .transform(new ConvertToDouble(\"variety\"))\n",
+    "    .transform(new ConvertToDouble(\"sepal.length\"))\n",
+    "    .transform(new ConvertToDouble(\"petal.length\"))\n",
+    "    .transform(new ConvertToDouble(\"sepal.width\"))\n",
+    "    .transform(new ConvertToDouble(\"petal.width\"))\n",
+    "    .build()\n",
+    "\n",
+    "var dataUrl = \"https://gist.githubusercontent.com/netj/8836201/raw/6f9306ad21398ea43cba4f7d537619d0e07d5ae3/iris.csv\"\n",
+    "var numLinesToSkip = 1\n",
+    "var delimiter = ','\n",
+    "var inputStream = new java.net.URL(dataUrl).openStream()\n",
+    "var csvReader = new CSVRecordReader(numLinesToSkip, delimiter)\n",
+    "csvReader.initialize(new InputStreamInputSplit(inputStream))\n",
+    "\n",
+    "var transformProcessRecordReader = new TransformProcessRecordReader(csvReader, tp);\n",
+    "var data = transformProcessRecordReader.next(10000).asInstanceOf[List[List[_]]]\n",
+    "Collections.shuffle(data);\n",
+    "\n",
+    "data"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The data still needs to be converted from  org.datavec.api.writable.DoubleWritable fields to doubles.\n",
+    "\n",
+    "We also split the dataset vertically into training (85 % of the data) and test data and horizontally into features and labels. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "127 + 23 = 150"
+      ]
+     },
+     "execution_count": 19,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "var trainingLen = (data.size * 0.85).toInt\n",
+    "var testLen = data.size - trainingLen \n",
+    "\n",
+    "trainingLen + \" + \" + testLen + \" = \"+data.size"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Shogun needs DoubleMatrix objects. We create them from our arrays."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Features: [6.600000, 2.900000, 4.600000, 1.300000; 6.900000, 3.100000, 4.900000, 1.500000; 4.600000, 3.100000, 1.500000, 0.200000; 5.000000, 3.300000, 1.400000, 0.200000; 4.900000, 3.000000, 1.400000, 0.200000; 7.200000, 3.600000, 6.100000, 2.500000; 7.700000, 2.600000, 6.900000, 2.300000; 5.100000, 3.500000, 1.400000, 0.200000; 6.100000, 3.000000, 4.600000, 1.400000; 5.900000, 3.200000, 4.800000, 1.800000; 7.100000, 3.000000, 5.900000, 2.100000; 6.600000, 3.000000, 4.400000, 1.400000; 4.600000, 3.200000, 1.400000, 0.200000; 6.300000, 2.700000, 4.900000, 1.800000; 6.800000, 3.000000, 5.500000, 2.100000; 6.300000, 3.300000, 4.700000, 1.600000; 6.700000, 3.300000, 5.700000, 2.500000; 6.400000, 2.900000, 4.300000, 1.300000; 6.500000, 3.000000, 5.800000, 2.200000; 5.400000, 3.900000, 1.300000, 0.400000; 5.000000, 3.600000, 1.400000, 0.200000; 5.800000, 2.800000, 5.100000, 2.400000; 6.000000, 3.000000, 4.800000, 1.800000]\n",
+      "==> Labels: [1.000000; 1.000000; 0.000000; 0.000000; 0.000000; 2.000000; 2.000000; 0.000000; 1.000000; 1.000000; 2.000000; 1.000000; 0.000000; 2.000000; 2.000000; 1.000000; 2.000000; 1.000000; 2.000000; 0.000000; 0.000000; 2.000000; 2.000000]\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "null"
+      ]
+     },
+     "execution_count": 20,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "var featuresTraining = new DoubleMatrix(ShogunNative.toArray2(data,0,trainingLen, 0, 4))\n",
+    "var labelsTraining = new DoubleMatrix(ShogunNative.toArray(data,0,trainingLen, 4))\n",
+    "\n",
+    "var featuresTest = new DoubleMatrix(ShogunNative.toArray2(data,trainingLen,testLen, 0, 4))\n",
+    "var labelsTest = new DoubleMatrix(ShogunNative.toArray(data,trainingLen,testLen, 4))\n",
+    "\n",
+    "println(\"Features: \"+ featuresTest)\n",
+    "println(\"==> Labels: \"+ labelsTest)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We double check the structure of our DoubleMatrix data: We print the number of columns and rows of our datasets:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "4 / 127\n",
+      "1 / 127\n",
+      "--------\n",
+      "4 / 23\n",
+      "1 / 23\n"
+     ]
+    }
+   ],
+   "source": [
+    "println(featuresTraining.getColumns +\" / \"+ featuresTraining.getRows)\n",
+    "println(labelsTraining.getColumns +\" / \"+ labelsTraining.getRows)\n",
+    "println(\"--------\")\n",
+    "println(featuresTest.getColumns +\" / \"+ featuresTest.getRows)\n",
+    "println(labelsTest.getColumns +\" / \"+ labelsTest.getRows)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Saving the Data ##\n",
+    "We are saving the features and labels in files so that we can load them later.\n",
+    "Unfortunatly I did not find any simple method-call to save the data in CSV files.  We we need to do some additoinal processing. Please note that per default Shogun is not expecting any header line.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 36,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "import java.nio.file.Files\n",
+       "import java.nio.file.Paths\n",
+       "saveCSV: (str: String, fileName: String)Unit\n"
+      ]
+     },
+     "execution_count": 36,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "import java.nio.file.Files\n",
+    "import java.nio.file.Paths\n",
+    "\n",
+    "\n",
+    "def saveCSV(str:String, fileName:String) {\n",
+    "    var text = str;\n",
+    "    text = text.replaceAll(\";\",java.lang.System.lineSeparator())\n",
+    "    text = text.replaceAll(\" \",\"\")\n",
+    "    text = text.substring(1, text.length()-1)\n",
+    "    Files.write(Paths.get(fileName), text.getBytes());\n",
+    "}\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 37,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "The data has been saved"
+      ]
+     },
+     "execution_count": 37,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "saveCSV(featuresTraining.toString(),\"iris_train_features.csv\")\n",
+    "saveCSV(labelsTraining.toString(),\"iris_train_labels.csv\")\n",
+    "saveCSV(featuresTest.toString(), \"iris_test_features.csv\")\n",
+    "saveCSV(labelsTest.toString(), \"iris_test_labels.csv\")\n",
+    "\n",
+    "\"The data has been saved\""
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Converting to Shogun Data ##\n",
+    "Finally we demonstrate how the jblas DoubleMatrix can be used to create directly the Shogun objects without the use of any files. For some strange reasons we need to transpose the data!"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 38,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[1.000000, 1.000000, 0.000000, 0.000000, 0.000000, 2.000000, 2.000000, 0.000000, 1.000000, 1.000000, 2.000000, 1.000000, 0.000000, 2.000000, 2.000000, 1.000000, 2.000000, 1.000000, 2.000000, 0.000000, 0.000000, 2.000000, 2.000000]"
+      ]
+     },
+     "execution_count": 38,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "var shogunFeaturesTrain = new RealFeatures(featuresTraining.transpose)\n",
+    "var shogunLabelsTrain = new MulticlassLabels(labelsTraining.transpose)\n",
+    "\n",
+    "var shogunFeaturesTest = new RealFeatures(featuresTest.transpose)\n",
+    "var shogunLabelsTest = new MulticlassLabels(labelsTest.transpose) \n",
+    "\n",
+    "shogunLabelsTest.get_labels()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We double check the structure of the data in shogun:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 39,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "4 / 127\n",
+      "1 / 127\n",
+      "--------\n",
+      "4 / 23\n",
+      "1 / 23\n"
+     ]
+    }
+   ],
+   "source": [
+    "println(shogunFeaturesTrain.get_num_features+\" / \" +shogunFeaturesTrain.get_num_vectors)\n",
+    "println(\"1 / \"+shogunLabelsTrain.get_num_labels)\n",
+    "println(\"--------\")\n",
+    "println(shogunFeaturesTest.get_num_features +\" / \" +shogunFeaturesTest.get_num_vectors)\n",
+    "println(\"1 / \"+shogunLabelsTest.get_num_labels)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 40,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[6.600000, 2.900000, 4.600000, 1.300000]"
+      ]
+     },
+     "execution_count": 40,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "shogunFeaturesTest.get_feature_vector(0)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Scala",
+   "language": "scala",
+   "name": "scala"
+  },
+  "language_info": {
+   "codemirror_mode": "text/x-scala",
+   "file_extension": ".scala",
+   "mimetype": "",
+   "name": "Scala",
+   "nbconverter_exporter": "",
+   "version": "2.11.12"
+  },
+  "toc": {
+   "base_numbering": 1,
+   "nav_menu": {},
+   "number_sections": false,
+   "sideBar": true,
+   "skip_h1_title": false,
+   "title_cell": "Table of Contents",
+   "title_sidebar": "Contents",
+   "toc_cell": false,
+   "toc_position": {
+    "height": "calc(100% - 180px)",
+    "left": "10px",
+    "top": "150px",
+    "width": "288px"
+   },
+   "toc_section_display": true,
+   "toc_window_display": true
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

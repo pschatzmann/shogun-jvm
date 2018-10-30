@@ -1,0 +1,22 @@
+FROM ubuntu:xenial
+MAINTAINER phil schatzmann
+WORKDIR /root
+ARG password
+RUN apt-get update 
+RUN apt-get install -y cmake bzip2 cmake-qt-gui wget gcc g++ git subversion curl software-properties-common  libxml2-dev default-jdk maven
+ENV PATH=/opt/conda/bin:/root/shogun-jvm/utils:$PATH
+COPY settings.xml /root/.m2/settings.xml
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-4.5.11-Linux-x86_64.sh -O ~/miniconda.sh && \
+    /bin/bash ~/miniconda.sh -b -p /opt/conda && \
+    rm ~/miniconda.sh && \
+    /opt/conda/bin/conda clean -tipsy && \
+    ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
+    echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
+    echo "conda activate base" >> ~/.bashrc
+    
+RUN conda install anaconda-client conda-build swig  
+RUN anaconda login --user pschatzmann --password sabrina1
+RUN conda config --set anaconda_upload yes
+RUN svn --username pschatzmann --password ${password} checkout svn://192.168.1.10/main/shogun-java
+WORKDIR /root/shogun-java
+CMD [ "/bin/bash" ]

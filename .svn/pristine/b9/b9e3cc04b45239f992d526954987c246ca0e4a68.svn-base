@@ -1,0 +1,138 @@
+package org.shogun;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Stack;
+
+/**
+ * Tree Node of the Dependency Tree. We parse the output of lddtree into a Tree
+ * so that we can visit the dependencies in post order
+ * 
+ * @author pschatzmann
+ *
+ */
+public class DependencyTreeNode {
+	private String libraryName;
+	private String libraryWithPath;
+	private List<DependencyTreeNode> children = new ArrayList();
+
+	public DependencyTreeNode(String name, String path) {
+		this.libraryName = name;
+		this.libraryWithPath = path;
+	}
+
+	/**
+	 * Parse an array of string lines into a Dependency Tree
+	 * 
+	 * @param lines
+	 * @return
+	 */
+	public static DependencyTreeNode parse(String[] lines) {
+		int lastLevel = -1;
+		DependencyTreeNode root = new DependencyTreeNode("", "");
+		Stack<DependencyTreeNode> stack = new Stack();
+		stack.push(root);
+		for (String line : lines) {
+			if (isValid(line)) {
+				String sa[] = line.split("=>");
+				if (sa.length != 2) {
+					throw new RuntimeException("Invalid line: " + line);
+				}
+				int level = getLevel(sa[0]);
+				String name = sa[0].trim();
+				String nameWithPath = sa[1].trim();
+				DependencyTreeNode node = new DependencyTreeNode(name, nameWithPath);
+				if (level > lastLevel) {
+					stack.peek().addChild(node);
+					stack.push(node);
+				} else if (level < lastLevel) {
+					stack.pop();
+					stack.peek().addChild(node);
+				} else {
+					stack.peek().addChild(node);
+				}
+
+				lastLevel = level;
+			}
+
+		}
+		return root;
+	}
+
+	private static boolean isValid(String line) {
+		return !line.trim().startsWith("//") && !line.trim().isEmpty();
+	}
+
+	/**
+	 * Count the leading spaces.
+	 * 
+	 * @param string
+	 * @return
+	 */
+	private static int getLevel(String string) {
+		int count = 0;
+		for (char c : string.toCharArray()) {
+			if (c != ' ') {
+				break;
+			}
+			count++;
+		}
+		return count;
+	}
+
+	/**
+	 * Returns the children in the defined order
+	 * 
+	 * @return
+	 */
+	public List<DependencyTreeNode> getChildren() {
+		return children;
+	}
+
+	/**
+	 * Returns the children in reverse order.
+	 * 
+	 * @return
+	 */
+	public List<DependencyTreeNode> getChildrenReverse() {
+		List result = new ArrayList(getChildren());
+		Collections.reverse(result);
+		return result;
+	}
+
+	public String getLibraryName() {
+		return this.libraryName;
+	}
+
+	public String getLibraryWithPath() {
+		return this.libraryWithPath;
+	}
+
+	public void addChild(DependencyTreeNode node) {
+		this.children.add(node);
+
+	}
+
+	public List<DependencyTreeNode> getTreeNodesPostOrder() {
+		List<DependencyTreeNode> result = new ArrayList();
+		postOrder(this, result);
+		return result;
+
+	}
+
+	void postOrder(DependencyTreeNode node, List<DependencyTreeNode> result) {
+		for (DependencyTreeNode child : node.getChildrenReverse()) {
+			postOrder(child, result);
+		}
+		if (!node.getLibraryName().isEmpty()) {
+			result.add(node);
+		}
+	}
+
+	@Override
+	public String toString() {
+		return this.libraryName;
+	}
+
+}

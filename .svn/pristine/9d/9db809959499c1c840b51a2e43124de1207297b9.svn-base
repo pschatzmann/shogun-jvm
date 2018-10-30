@@ -1,0 +1,9 @@
+Please install Shogun and the related binaries on your system.
+
+We recommend that you use Anaconda.
+
+You can install shogun type typing:
+
+	conda install  shogun
+	
+

@@ -1,0 +1,128 @@
+{% set name = "shogun-jvm" %}
+
+{% set version = "6.1.3" %}
+{% set commit = 'shogun_' + version %}
+{% set sha256 = "75f4d555efe06eaa7c4c12a1dc942f6e4d41a8ed495777a790b9bd9df936c19c" %}
+
+# Shogun doesn't produce a single tarball you can build from anymore;
+# need to get the gpl-shogun tarball too.
+# Remember to update this when updating the version!
+{% set gpl_commit = 'v' + version %}
+{% set blas_variant = "openblas" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  - url: https://github.com/shogun-toolbox/shogun/archive/{{ commit }}.tar.gz
+    sha256: {{ sha256 }}
+    patches:
+      - ../patches/json-c-patch
+    
+  - url: https://github.com/shogun-toolbox/shogun-gpl/archive/{{ gpl_commit }}.tar.gz
+    folder: src/gpl
+  - url: http://central.maven.org/maven2/org/jblas/jblas/1.2.4/jblas-1.2.4.jar
+    folder: share
+
+
+{% set lc, vs, ve, prefix, parbuild = "\\", "$", "", "$PREFIX", "-j $CPU_COUNT" %}  # [unix]
+{% set lc, vs, ve, prefix, parbuild = "^", "%", "%", "%LIBRARY_PREFIX%", "" %}      # [win]
+build:
+  number: 1
+  features:
+    - blas_{{ blas_variant }}  # [not win]
+  skip: true  # [win32 or (win and vc<14)]
+  script: |
+    mkdir build
+    cd build
+    mv ../share .
+
+    cmake ..                                       {{ lc }}
+      -G"{{vs}}CMAKE_GENERATOR{{ve}}"              {{ lc }}
+      -DCMAKE_VERBOSE_MAKEFILE=ON                  {{ lc }}
+      -DCMAKE_PREFIX_PATH="{{ prefix }}"           {{ lc }}
+      -DCMAKE_INSTALL_PREFIX="{{ prefix }}"        {{ lc }}
+      -DCMAKE_BUILD_TYPE=Release                   {{ lc }}
+      -DBUILD_EXAMPLES=OFF                         {{ lc }}
+      -DBUILD_META_EXAMPLES=OFF                    {{ lc }}
+      -DINTERFACE_JAVA=ON                          {{ lc }}
+      -DJBLAS="share/jblas-1.2.4.jar"              {{ lc }}
+      -DBUNDLE_JSON=OFF                            {{ lc }}
+      -DBUNDLE_NLOPT=OFF                           {{ lc }}
+      -DUSE_SVMLIGHT=OFF                           {{ lc }}
+      -DENABLE_TESTING=OFF                         {{ lc }}
+      -DENABLE_COVERAGE=OFF                        {{ lc }}
+      -DENABLE_PROTOBUF=OFF                         {{ lc }}
+      -DUSE_SWIG_DIRECTORS=ON
+    if errorlevel 1 exit 1  # [win]
+
+    cmake --build . --target shogun --config Release -- {{ parbuild }}
+    if errorlevel 1 exit 1  # [win]
+
+    cmake --build . --target install --config Release -- {{ parbuild }}
+    if errorlevel 1 exit 1  # [win]
+
+    cp share/* $PREFIX/share/java
+
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - python
+    - openjdk
+#    - protobuf
+#    - libprotobuf   # [not win] 
+    - nlopt
+    - cmake
+  host:
+    - arpack       # [not win]
+    - bzip2
+    - ctags
+    - curl
+    - eigen
+    - glpk
+    - hdf5
+    - json-c       # [not win]
+    - libxml2
+    - lzo
+    - openblas     # [not win]
+#    - libprotobuf   # [not win] 
+    - rxcpp 4.0.0
+    - snappy
+    - xz
+    - zlib
+    - nlopt
+  run:
+    - arpack       # [not win]
+    - bzip2
+    - ctags
+    - curl
+    - glpk
+    - hdf5
+    - json-c       # [not win]
+    - libxml2
+    - lzo
+    - openblas     # [not win]
+ #   - libprotobuf  # [not win]
+    - snappy
+    - xz
+    - zlib
+    - nlopt
+
+
+about:
+  home: http://shogun.ml
+  license: GPL-3.0
+  license_family: GPL
+  license_file: COPYING
+  summary: 'Unified and Efficient Machine Learning'
+  description: |
+    The Shogun Machine learning toolbox offers a wide range of efficient and
+    unified Machine Learning methods. We install the jar and the related dynamic libraries so that we can use
+    shogun in any JVM supported language.
+  doc_url: http://shogun.ml/examples/latest/index.html
+  dev_url: https://github.com/shogun-toolbox/shogun/wiki
+
+extra:
+  recipe-maintainers:
+    - phil.schatzmann@gmail.com

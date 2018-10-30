@@ -1,0 +1,27 @@
+package org.shogun;
+
+import java.io.IOException;
+
+import com.github.fommil.jni.JniLoader;
+import com.github.fommil.jni.JniNamer;
+
+/**
+ * Loads the native jni libraries which are a precondition to use shogun.jar
+ * 
+ * @author pschatzmann
+ *
+ */
+
+public class ShogunNative {
+	private final static String VERSION= "6.1.3";
+	
+	public static void setup() throws IOException {
+		JniLoader.load(JniNamer.getJniName("shogun"+getVersion()));
+		shogun.init_shogun();
+	}
+
+	public static String getVersion() {
+		return VERSION;
+	}
+
+}

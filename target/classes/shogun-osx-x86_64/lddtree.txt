@@ -1,0 +1,4 @@
+// otool -L  /usr/local/opt/shogun/lib/libshogun.dylib
+libshogun.jnilib => /usr/local/Cellar/shogun/6.1.3_3/lib/cli/shogun/libshogun.jnilib (*)
+    libshogun.18.0.dylib => /usr/local/lib/libshogun.18.dylib  (compatibility version 18.0.0, current version 18.0.0)
+

@@ -1,0 +1,103 @@
+# Shogun-JVM #
+
+## Introduction ##
+Shogun (http://shogun.ml/) is a unified and efficient machine learning library which has been implemented in C++ and supports
+many languages (Python, Octave, R, Java/Scala, Lua, C#, Ruby, etc) 
+
+Python is the most supported language if you want to implement some Machine Learning. It is much harder to find some good frameworks if you want
+to implement Machine Learning in a JVM based environment. Therefore Shogun is am interesting framework because it also supports Java but it is hard to use
+because it is not available in Maven.  
+
+Unfortunatly it is very hard to install the libraries which are needed for java. 
+
+## Goal ##
+
+The goal of Shogun-JVM is to make Shogun accessible directly from a Maven Repository so that it does not need to be installed separately before it can be used,  
+so that we get the same level of comfort that we currently have on the Python side with Anaconda and pip.  
+
+
+## Supported System Environments ##
+
+Currently we only support the following system environments:
+- shogun6.1.3-linux-x86_64
+- shogun6.1.3-osx-x86_64
+
+Please let me know if you need any additional platform.
+
+## Implementation Details ##
+
+- The shogin.jar is made available in the Maven Repository
+- Shogun-JVM provides a POM which refers to all dependencies 
+- The compiled c++ libraries are stored as resources in the shogun-jvm JAR
+- We provide a simple layer which loads the c++ jndi libraries 
+- We optinally install the missing binaries in the temp directory and load it from there
+
+
+## Versions ##
+All the jars are available for JDK 1.8 and higher 
+We provide the latest released Shogun version which currently is 6.1.3
+ 
+
+## Documentation ##
+
+We provide the following examples which demonstrate how Shogun(-JVM) can be used with different JVM based languages using BeakerX
+- Scala
+- Java
+- Groovie
+- Kotlin
+- Clojure
+
+The documentation for Shogun can be found at http://shogun.ml/api/latest/classes.html
+
+## Alternative Usage ##
+The basic intension of this project was to provide the compiled c++ artifacts. You can however just use the jars from Maven and use
+the mechanism provided by Shogun to load the binaries by specifying the LD_LIBRARY_PATH or DYLD_LIBRARY_PATH (MacOS)
+
+
+## Comments ##
+
+- Location of jar provided by shogun
+/usr/local/share/java/shogun.jar
+
+- Command to upload jar to maven:
+mvn deploy:deploy-file -DgroupId=org.shogun \
+    -DartifactId=shogun \
+    -Dversion=6.1.3 \
+    -Dpackaging=jar \
+    -Dfile=shogun.jar \
+    -DgeneratePom=true \
+    -DrepositoryId=work \
+    -Durl=http://nuc.local:8081/repository/maven-releases/
+
+
+- Copy dynamic libraries (Linux):
+cp /usr/local/lib/libshogun.so libshogun.so
+cp /lib/x86_64-linux-gnu/libpthread.so.0 libpthread.so.0
+cp /usr/lib/x86_64-linux-gnu/libgomp.so.1 libgomp.so.1
+cp /lib/x86_64-linux-gnu/libdl.so.2 libdl.so.2
+cp /usr/lib/x86_64-linux-gnu/libprotobuf.so.10 libprotobuf.so.10 
+cp /usr/lib/x86_64-linux-gnu/libstdc++.so.6 libstdc++.so.6
+cp /lib/x86_64-linux-gnu/libm.so.6 libm.so.6
+cp /lib/x86_64-linux-gnu/libz.so.1 libz.so.1
+cp /lib/x86_64-linux-gnu/libgcc_s.so.1 libgcc_s.so.1
+cp /lib/x86_64-linux-gnu/libc.so.6 libc.so.6
+cp /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 ld-linux-x86-64.so.2 
+ 
+- Copy dynamic libraries (OS X):
+cp /usr/local/opt/shogun/lib/libshogun.18.dylib libshogun.18.dylib  
+cp /System/Library/Frameworks/Accelerate.framework/Versions/A/Accelerate Accelerate
+cp /usr/local/opt/glpk/lib/libglpk.40.dylib libglpk.40.dylib
+cp /usr/local/opt/arpack/libexec/lib/libarpack.2.dylib libarpack.2.dylib
+cp /usr/local/opt/json-c/lib/libjson-c.4.dylib libjson-c.4.dylib 
+cp /usr/lib/libxml2.2.dylib libxml2.2.dylib 
+cp /usr/local/opt/hdf5/lib/libhdf5.103.dylib libhdf5.103.dylib 
+cp /usr/local/opt/szip/lib/libsz.2.dylib libsz.2.dylib
+cp /usr/lib/libz.1.dylib libz.1.dylib  
+cp /usr/lib/libSystem.B.dylib libSystem.B.dylib
+cp /usr/lib/libcurl.4.dylib libcurl.4.dylib 
+cp /usr/lib/libbz2.1.0.dylib libbz2.1.0.dylib
+cp /usr/local/opt/xz/lib/liblzma.5.dylib liblzma.5.dylib
+cp /usr/local/opt/snappy/lib/libsnappy.1.dylib libsnappy.1.dylib
+cp /usr/local/opt/lzo/lib/liblzo2.2.dylib liblzo2.2.dylib 
+cp /usr/local/opt/nlopt/lib/libnlopt_cxx.0.dylib libnlopt_cxx.0.dylib 
+cp /usr/lib/libc++.1.dylib libc++.1.dylib 

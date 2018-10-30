@@ -1,0 +1,163 @@
+package org.shogun;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+
+/**
+ * Java Class to manage native libraries
+ * 
+ * @author pschatzmann
+ *
+ */
+public class Native {
+	public String name;
+	public String version;
+	private boolean forceCopy = true;
+
+	/**
+	 * Defines the library. The name is used to identify the prefix of the resource
+	 * directory name which contains the libraries
+	 * 
+	 * @param name
+	 * @param version
+	 */
+	public Native(String name, String version) {
+		this.name = name;
+		this.version = version == null ? "" : version;
+	}
+
+	/**
+	 * Calls System.load() on all necessary libraries
+	 * 
+	 * @throws IOException
+	 */
+	public void setup() throws IOException {
+		for (String resource : this.getLibraries()) {
+			resource = resource.trim();
+			if (!resource.isEmpty() && !resource.startsWith("//")) {
+				// System.load(resource);
+				File file = this.getFile(resource);
+				System.load(file.getAbsolutePath());
+			}
+		}
+		System.out.println("The libraries have been loaded");
+	}
+
+	/**
+	 * Returns the list of libraries which need to be loaded
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
+	public String[] getLibraries() throws IOException {
+		String resourcePath = "/" + getPlatformSpecificName() + "/dir.txt";
+		InputStream is = Native.class.getResourceAsStream(resourcePath);
+		if (is == null) {
+			throw new RuntimeException("Unsupported Platform: " + getPlatform());
+		}
+		String files = IOUtils.toString(is, "UTF8");
+		return files.split("\\s+");
+	}
+
+	/**
+	 * Determines the file for the system library. We create the file from the
+	 * resources if it does not exist
+	 * 
+	 * @param resource
+	 * @return
+	 * @throws IOException
+	 */
+	public File getFile(String resource) throws IOException {
+		String resourcePath = "/" + getPlatformSpecificName() + "/"+resource;
+		InputStream input = Native.class.getResourceAsStream(resourcePath.trim());
+		if (input==null) {
+			throw new RuntimeException(resourcePath+" is not available");
+		}
+		File file = new File(getTarget(resource));
+		if (this.isForceCopy() || !file.exists() || file.length() == 0) {
+			FileUtils.copyInputStreamToFile(input, file);
+		}
+
+		if (file == null || !file.exists()) {
+			throw new RuntimeException("Error: File " + file + " not found!");
+		}
+		return file;
+
+	}
+
+	/**
+	 * Determines the location of the dynamic library. If the env variable
+	 * DYNAMIC-DIRECTORY is not defined we use the tmpdir
+	 * 
+	 * @param resource
+	 * @return
+	 */
+	protected String getTarget(String resource) {
+		String target = System.getenv("DYNAMIC-DIRECTORY");
+		if (target == null) {
+			target = System.getProperty("java.io.tmpdir");
+		}
+		String result = target + version + "-" + resource;
+		return result;
+	}
+
+	/**
+	 * Concatenation of stem - OS - Architecture
+	 * 
+	 * @param stem
+	 * @return
+	 */
+	public String getPlatformSpecificName() {
+		return name + "-" + getPlatform();
+	}
+
+	/**
+	 * Concatenation of OS - Architecture
+	 * 
+	 * @return
+	 */
+	public String getPlatform() {
+		String arch = arch();
+		String os = os();
+		return os + "-" + arch;
+	}
+
+	/**
+	 * Determines the architecture
+	 * 
+	 * @return
+	 */
+	protected String arch() {
+		String arch = System.getProperty("os.arch", "").toLowerCase();
+		if (arch.equals("amd64")) {
+			arch = "x86_64";
+		}
+		return arch;
+	}
+
+	/**
+	 * Determines the operation system
+	 * 
+	 * @return
+	 */
+	protected String os() {
+		String os = System.getProperty("os.name", "").toLowerCase();
+		if (os.startsWith("mac")) {
+			os = "osx";
+		}
+		return os;
+	}
+
+	public boolean isForceCopy() {
+		return forceCopy;
+	}
+
+	public void setForceCopy(boolean forceCopy) {
+		this.forceCopy = forceCopy;
+	}
+
+}

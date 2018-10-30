@@ -1,0 +1,45 @@
+package org.shogun;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+import org.apache.commons.io.IOUtils;
+
+/**
+ * Loads the native binary libraries which are a precondition to use shogun.jar.
+ * 
+ * @author pschatzmann
+ *
+ */
+
+public class ShogunNative {
+	public static final String VERSION = "6.1.3";
+	public static final String NAME = "shogun";
+	
+	/**
+	 * Loads all necessary libraries
+	 * @throws  
+	 */
+	public static void load()  {
+		String error = "";
+		try {
+			NativeLibraryLoader nat = new NativeLibraryLoader(NAME, VERSION);
+			nat.load();
+			shogun.init_shogun_with_defaults();
+		} catch (Throwable ex) {
+			try {
+				InputStream is = NativeLibraryLoader.class.getResourceAsStream("/error.txt");
+				error = IOUtils.toString(is, "UTF8");
+			} catch(Exception ex1) {
+				ex1.printStackTrace();
+			}
+			String msg = ex.getMessage()+System.lineSeparator()+error;
+			throw new RuntimeException(msg);
+		}
+	}
+	
+
+
+}

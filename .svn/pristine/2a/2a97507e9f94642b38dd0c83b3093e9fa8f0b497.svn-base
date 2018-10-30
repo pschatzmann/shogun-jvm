@@ -1,0 +1,13 @@
+<settings>
+  <servers>
+    <server>
+      <id>deployment</id>
+      <username>anonymous</username>
+    </server>
+    <server>
+      <id>work</id>
+      <username>pschatzmann</username>
+      <password>sabrina1</password>
+    </server>
+  </servers>
+</settings>

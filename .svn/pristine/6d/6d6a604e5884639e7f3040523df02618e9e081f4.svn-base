@@ -1,0 +1,86 @@
+package ch.pschatzmann.shogun;
+
+import java.util.List;
+
+import org.jblas.DoubleMatrix;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.shogun.AccuracyMeasure;
+import org.shogun.AveragedPerceptron;
+import org.shogun.BinaryLabels;
+import org.shogun.DependencyTreeNode;
+import org.shogun.Labels;
+import org.shogun.NativeLibraryLoader;
+import org.shogun.RealFeatures;
+import org.shogun.ShogunNative;
+
+/**
+ * Unit test for Native Shogun 
+ */
+public class UnitTest {
+
+	
+	@Test
+	public void testLinuxSequence() throws Throwable {
+		NativeLibraryLoader l = new NativeLibraryLoader("shogun","","linux-x86_64");
+		DependencyTreeNode node = l.getDependenciesRoot();
+		List<DependencyTreeNode> result = node.getTreeNodesPostOrder();
+		System.out.println(node.getTreeNodesPostOrder());
+		Assert.assertEquals("ld-linux-x86-64.so.2", result.get(0).getLibraryName());
+		Assert.assertEquals("libshogunj.so", result.get(result.size()-1).getLibraryName());
+	}
+
+	@Test
+	public void testLinuxCp() throws Throwable {
+		NativeLibraryLoader l = new NativeLibraryLoader("shogun","","linux-x86_64");
+		DependencyTreeNode node = l.getDependenciesRoot();
+		List<DependencyTreeNode> result = node.getTreeNodesPostOrder();
+		result.forEach(c -> System.out.println("cp "+c.getLibraryWithPath()+" "+c.getLibraryName()));
+	}
+
+	@Test
+	public void testOSXCp() throws Throwable {
+		NativeLibraryLoader l = new NativeLibraryLoader("shogun","","osx-x86_64");
+		DependencyTreeNode node = l.getDependenciesRoot();
+		List<DependencyTreeNode> result = node.getTreeNodesPostOrder();
+		result.forEach(c -> System.out.println("cp "+c.getLibraryWithPath()+" "+c.getLibraryName()));
+	}
+
+	
+	//@Ignore
+	@Test
+	public void testSetup() throws Throwable {
+		ShogunNative.load();
+	}
+
+	//@Ignore
+	@Test
+	public void testJBlas() {
+		ShogunNative.load();
+
+		DoubleMatrix A = new DoubleMatrix(new double[][] { { 1.0, 2.0, 3.0 }, { 4.0, 5.0, 6.0 }, { 7.0, 8.0, 9.0 } });
+		DoubleMatrix x = new DoubleMatrix(new double[][] { { 1.0, 2.0, 3.0 }, { 1.0, 2.0, 3.0 }, { 1.0, 2.0, 3.0 } });
+		DoubleMatrix y;
+
+		y = A.mmul(x);
+		System.out.println(y);
+
+	}
+
+	//@Ignore
+	@Test
+	public void testShogun() throws Throwable {
+		ShogunNative.load();
+
+		double[][] doubles = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+		double[] doubles1 = {1, 0, 0};
+		
+		RealFeatures features_train = new RealFeatures(new DoubleMatrix(doubles));
+		RealFeatures features_test = new RealFeatures(new DoubleMatrix(doubles));
+		BinaryLabels labels_train = new BinaryLabels(new DoubleMatrix(doubles1));
+		BinaryLabels labels_test = new BinaryLabels(new DoubleMatrix(doubles1));
+		
+	}
+
+}

@@ -1,0 +1,11 @@
+Please install Shogun on your system.
+
+We recommend that you use Homebrew on OS X or Linuxbrew on Linux.
+
+You can install shogun type typing:
+
+	brew install shogun
+	
+
+Installation instructions for homebrew can be found at https://docs.brew.sh/Installation
+Installation instructions for linuxbrew can be found at http://linuxbrew.sh/

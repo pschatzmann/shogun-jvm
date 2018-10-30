@@ -1,0 +1,6 @@
+libgomp.so.1
+libgfortran.so.3
+//libjblas.so
+//libjblas_arch_flavor.so
+//libgfortran.so.3
+libshogun.so

@@ -1,0 +1,7 @@
+libquadmath.so
+libgfortran.so.3
+//libgomp.a
+//libjblas.so
+//libjblas_arch_flavor.so
+//libgfortran.so.3
+libshogun.so

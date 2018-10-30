@@ -1,0 +1,4 @@
+// lddtree /usr/local/lib/libshogun.so
+// cli/shogun/libshogun.so has been renamed to libshogunj.so to avoid that the wrong library (/usr/local/lib/libshogun) is loaded
+libshogunj.so => /usr/lib/cli/shogun/libshogun.so (interpreter => none)
+    libshogun.so.18 => /usr/local/lib/libshogun.so.18

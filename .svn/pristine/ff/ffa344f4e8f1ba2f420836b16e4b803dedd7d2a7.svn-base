@@ -1,0 +1,19 @@
+// otool -L  /usr/local/opt/shogun/lib/libshogun.dylib
+
+libshogun.dylib => /usr/local/opt/shogun/lib/libshogun.dylib 
+    Accelerate => /System/Library/Frameworks/Accelerate.framework/Versions/A/Accelerate 
+    libglpk.40.dylib => /usr/local/opt/glpk/lib/libglpk.40.dylib 
+    libarpack.2.dylib => /usr/local/opt/arpack/libexec/lib/libarpack.2.dylib 
+    libjson-c.4.dylib => /usr/local/opt/json-c/lib/libjson-c.4.dylib 
+    libxml2.2.dylib => /usr/lib/libxml2.2.dylib 
+    libhdf5.103.dylib => /usr/local/opt/hdf5/lib/libhdf5.103.dylib 
+    libsz.2.dylib => /usr/local/opt/szip/lib/libsz.2.dylib 
+    libz.1.dylib  => /usr/lib/libz.1.dylib 
+    libSystem.B.dylib => /usr/lib/libSystem.B.dylib 
+    libcurl.4.dylib  => /usr/lib/libcurl.4.dylib 
+    libbz2.1.0.dylib  => /usr/lib/libbz2.1.0.dylib 
+    liblzma.5.dylib => /usr/local/opt/xz/lib/liblzma.5.dylib 
+    libsnappy.1.dylib => /usr/local/opt/snappy/lib/libsnappy.1.dylib 
+    liblzo2.2.dylib => /usr/local/opt/lzo/lib/liblzo2.2.dylib 
+    libnlopt_cxx.0.dylib => /usr/local/opt/nlopt/lib/libnlopt_cxx.0.dylib 
+    libc++.1.dylib  => /usr/lib/libc++.1.dylib 

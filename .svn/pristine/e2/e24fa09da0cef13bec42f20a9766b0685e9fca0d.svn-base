@@ -1,0 +1,32 @@
+package org.shogun;
+
+import com.github.fommil.jni.JniLoader;
+import com.github.fommil.jni.JniNamer;
+
+/**
+ * Loads the native binary libraries which are a precondition to use shogun.jar.
+ * We ignore the LD_LIBRARY_PATH or DYLD_LIBRARY_PATH environment variables and
+ * loads the library always from the resources in this jar
+ * 
+ * @author pschatzmann
+ *
+ */
+
+public class ShogunNative {
+	private final static String VERSION = "6.1.3";
+
+	public static void setup() {
+		try {
+			JniLoader.load(path("libgfortran3.so.3"), path("libshogun.so.18.0") );
+			shogun.init_shogun();
+		} catch(Throwable ex) {
+			ex.printStackTrace();
+			throw ex;
+		}
+	}
+
+	public static String path(String libName) {
+		return JniNamer.getJniName("shogun")+"/"+libName;
+	}
+
+}

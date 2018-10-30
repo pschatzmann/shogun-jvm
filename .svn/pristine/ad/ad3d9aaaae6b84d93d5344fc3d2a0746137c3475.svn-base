@@ -1,0 +1,374 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Shogun in Kotlin #\n",
+    "\n",
+    "Shogun is and open-source machine learning library that offers a wide range of efficient and unified machine learning methods. \n",
+    "\n",
+    "It is implemented in C++ and provides the necessary java integration so that it can be used in any language which is based on the JVM:\n",
+    "- Java\n",
+    "- Scala\n",
+    "- Groovy\n",
+    "- Kotlin\n",
+    "- etc\n",
+    "\n",
+    "Here is a short introduction which shows how to use Shogun with Kotlin using a GaussianNaiveBayes for predicting IRIS data. \n",
+    "We use Jupyter with the BeakerX (http://beakerx.com) kernel.\n",
+    "\n",
+    "## Setup ##\n",
+    "Before you can start you need to install the Shogun binaries with 'conda install -c pschatzmann shogun-jvm'.\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Unfortunalty Shogun is not available via Maven. In order to simplify the usage of Shogun in any JVM environment I crafted the  Shogun-JVM project which provides the binaries in conda and the jars via Maven. You can use these java libraries starting from JDK 1.8. \n",
+    "\n",
+    "We also add DL4J to simplify the pre-processing of the data."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Added new repo: maven-public\n"
+     ]
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "method": "display_data"
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "2ad7fe59-46d4-41b4-8e83-dd8d2a7b07e6",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "method": "display_data"
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "%classpath config resolver maven-public http://pschatzmann.ch/repository/maven-public/\n",
+    "%classpath add mvn org.shogun:shogun-jvm:0.0.1-SNAPSHOT"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We add the import for Shogun so that we can use the classes without package prefixes:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "null"
+      ]
+     },
+     "execution_count": 7,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "import org.jblas.*\n",
+    "import org.shogun.*\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Here we use shogun-jvm to load the correct libshogun.so.\n",
+    "Alternativly could try to set the LD_LIBRARY_PATH, DYLD_LIBRARY_PATH, java.library.path before the JVM is started or call System load() yourself"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "null"
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "ShogunNative.load()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Loading of the Shogun Data ##\n",
+    "After we have prepared our data we can load it from the files. For the deatils how to setup the data can check the document DataSetup.ipnb. If we already have DoubleMatrix objects we can pass them int constructor of the Feautures and Labels."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 1.000000, 1.000000, 0.000000, 1.000000, 0.000000, 2.000000, 2.000000, 0.000000, 2.000000, 2.000000, 1.000000, 0.000000, 2.000000, 1.000000, 2.000000, 1.000000, 1.000000, 2.000000]"
+      ]
+     },
+     "execution_count": 5,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "val shogunFeaturesTrain =  RealFeatures(CSVFile(\"iris_train_features.csv\",'r'))\n",
+    "val shogunLabelsTrain = MulticlassLabels(CSVFile(\"iris_train_labels.csv\",'r'))\n",
+    "\n",
+    "val shogunFeaturesTest = RealFeatures(CSVFile(\"iris_test_features.csv\",'r'))\n",
+    "val shogunLabelsTest =  MulticlassLabels(CSVFile(\"iris_test_labels.csv\",'r'))\n",
+    "\n",
+    "shogunLabelsTest.get_labels()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We double check the structure of the data in shogun:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "4 / 127\n",
+      "1 / 127\n",
+      "--------\n",
+      "4 / 23\n",
+      "1 / 23\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "null"
+      ]
+     },
+     "execution_count": 6,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "println(\"${shogunFeaturesTrain.get_num_features()} / ${shogunFeaturesTrain.get_num_vectors()}\")\n",
+    "println(\"1 / ${shogunLabelsTrain.get_num_labels()}\")\n",
+    "println(\"--------\")\n",
+    "println(\"${shogunFeaturesTest.get_num_features()} / ${shogunFeaturesTest.get_num_vectors()}\")\n",
+    "println(\"1 / ${shogunLabelsTest.get_num_labels()}\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 37,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[5.400000, 3.400000, 1.500000, 0.400000]"
+      ]
+     },
+     "execution_count": 37,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "shogunFeaturesTest.get_feature_vector(0)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Classify and Predict ##\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We train the MulticlassLogisticRegression:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 38,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "true"
+      ]
+     },
+     "execution_count": 38,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "val classifier =GaussianNaiveBayes(shogunFeaturesTrain, shogunLabelsTrain)\n",
+    "\n",
+    "classifier.train()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 39,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 1.000000, 1.000000, 0.000000, 1.000000, 0.000000, 2.000000, 2.000000, 0.000000, 2.000000, 2.000000, 1.000000, 0.000000, 2.000000, 1.000000, 2.000000, 1.000000, 1.000000, 2.000000]"
+      ]
+     },
+     "execution_count": 39,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "val predictedLabels = classifier.apply_multiclass(shogunFeaturesTest)\n",
+    "\n",
+    "predictedLabels.get_labels()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 40,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 1.000000, 1.000000, 0.000000, 1.000000, 0.000000, 2.000000, 2.000000, 0.000000, 2.000000, 2.000000, 1.000000, 0.000000, 2.000000, 1.000000, 2.000000, 1.000000, 1.000000, 2.000000]"
+      ]
+     },
+     "execution_count": 40,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "shogunLabelsTest.get_labels()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Finally we can calculate the accuracy of our prediction:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 41,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "1.0"
+      ]
+     },
+     "execution_count": 41,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "val eval =  MulticlassAccuracy()\n",
+    "val accuracy = eval.evaluate(predictedLabels, shogunLabelsTest)\n",
+    "\n",
+    "accuracy"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Kotlin",
+   "language": "kotlin",
+   "name": "kotlin"
+  },
+  "language_info": {
+   "codemirror_mode": "kotlin",
+   "file_extension": ".kt",
+   "mimetype": "",
+   "name": "Kotlin",
+   "nbconverter_exporter": "",
+   "version": "1.2.21"
+  },
+  "toc": {
+   "base_numbering": 1,
+   "nav_menu": {},
+   "number_sections": false,
+   "sideBar": false,
+   "skip_h1_title": false,
+   "title_cell": "Table of Contents",
+   "title_sidebar": "Contents",
+   "toc_cell": false,
+   "toc_position": {},
+   "toc_section_display": false,
+   "toc_window_display": true
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

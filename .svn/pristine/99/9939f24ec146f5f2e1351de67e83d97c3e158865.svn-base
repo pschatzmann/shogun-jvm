@@ -1,0 +1,29 @@
+package org.shogun;
+
+/**
+ * Loads the native binary libraries which are a precondition to use shogun.jar.
+ * We ignore the LD_LIBRARY_PATH or DYLD_LIBRARY_PATH environment variables and
+ * loads the library always from the resources in this jar
+ * 
+ * @author pschatzmann
+ *
+ */
+
+public class ShogunNative {
+	public static final String VERSION = "6.1.3";
+
+	/**
+	 * Loads all necessary libraries
+	 */
+	public static void load() {
+		try {
+			NativeLibraryLoader nat = new NativeLibraryLoader("shogun", VERSION);
+			nat.load();
+			shogun.init_shogun();
+		} catch (Throwable ex) {
+			ex.printStackTrace();
+			throw new RuntimeException(ex);
+		}
+	}
+
+}

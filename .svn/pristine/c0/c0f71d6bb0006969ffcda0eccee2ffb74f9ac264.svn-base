@@ -1,0 +1,53 @@
+package org.shogun;
+import org.apache.log4j.*;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Properties;
+
+/**
+ * Loads the native binary libraries which are a precondition to use shogun.jar.
+ * 
+ * @author pschatzmann
+ *
+ */
+
+public class ShogunNative {
+	public static final String VERSION = "6.1.3";
+	public static final String NAME = "shogun";
+	
+	/**
+	 * Loads all necessary libraries
+	 */
+	public static void load(boolean copy) {
+		try {
+			NativeLibraryLoader nat = new NativeLibraryLoader(NAME, VERSION);
+			nat.load(copy);
+			shogun.init_shogun_with_defaults();
+		} catch (Throwable ex) {
+			String msg = ex.getMessage()+" - Please install libshogun18";
+			throw new RuntimeException(msg);
+		}
+	}
+	
+	/**
+	 * Loads all necessary libraries. 
+	 */
+	public static void load() {
+		load(false);
+	}
+	
+	/**
+	 * Reset log4j configuration
+	 * @param fileName
+	 * @throws IOException 
+	 * @throws FileNotFoundException 
+	 */
+	public static void log4j(String fileName) throws FileNotFoundException, IOException {
+		Properties properties = new Properties();
+		properties.load(new java.io.FileInputStream(fileName));
+		LogManager.resetConfiguration();
+		PropertyConfigurator.configure(properties);
+	}
+
+}

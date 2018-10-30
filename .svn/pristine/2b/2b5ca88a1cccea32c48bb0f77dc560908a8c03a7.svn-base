@@ -1,0 +1,58 @@
+package ch.pschatzmann.shogun;
+
+import org.jblas.DoubleMatrix;
+import org.junit.Test;
+import org.shogun.AccuracyMeasure;
+import org.shogun.AveragedPerceptron;
+import org.shogun.BinaryLabels;
+import org.shogun.Labels;
+import org.shogun.RealFeatures;
+import org.shogun.ShogunNative;
+
+/**
+ * Unit test for Native Shogun 
+ */
+public class UnitTest {
+
+	@Test
+	public void testSetup() throws Throwable {
+		ShogunNative.load();
+	}
+
+	@Test
+	public void testJBlas() {
+		ShogunNative.load();
+
+		DoubleMatrix A = new DoubleMatrix(new double[][] { { 1.0, 2.0, 3.0 }, { 4.0, 5.0, 6.0 }, { 7.0, 8.0, 9.0 } });
+		DoubleMatrix x = new DoubleMatrix(new double[][] { { 1.0, 2.0, 3.0 }, { 1.0, 2.0, 3.0 }, { 1.0, 2.0, 3.0 } });
+		DoubleMatrix y;
+
+		y = A.mmul(x);
+		System.out.println(y);
+
+	}
+
+	@Test
+	public void testShogun() throws Throwable {
+		ShogunNative.load();
+
+		RealFeatures features_train = new RealFeatures(new DoubleMatrix(1,1));
+		RealFeatures features_test = new RealFeatures(new DoubleMatrix(1,1));
+		BinaryLabels labels_train = new BinaryLabels(new DoubleMatrix(1,1));
+		BinaryLabels labels_test = new BinaryLabels(new DoubleMatrix(1,1));
+		double learn_rate = 1.0;
+		int max_iter = 10;
+		AveragedPerceptron perceptron = new AveragedPerceptron(features_train, labels_train);
+		perceptron.set_learn_rate(learn_rate);
+		perceptron.set_max_iter(max_iter);
+
+		perceptron.train();
+		perceptron.set_features(features_test);
+		Labels labels_predict = perceptron.apply();
+		DoubleMatrix weights = perceptron.get_w();
+		double bias = perceptron.get_bias();
+		AccuracyMeasure eval = new AccuracyMeasure();
+		double accuracy = eval.evaluate(labels_predict, labels_test);
+	}
+
+}

@@ -1,0 +1,3 @@
+#!/bin/bash
+svn update --username pschatzmann --password sabrina1 /root/shogun-java
+conda build /shogun-java/utils/conda/shogun-jvm --debug

@@ -32,6 +32,7 @@ Currently we only support the following system environments:
 ## Documentation ##
 
 The documentation for Shogun can be found at http://shogun.ml/api/latest/classes.html
+The documentation for Shogun-JVM with exampels can be found at https://github.com/pschatzmann/shogun-jvm/tree/master/doc/workspace
 
 ## Versions ##
 
